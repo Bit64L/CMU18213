@@ -143,7 +143,7 @@ NOTES:
  *   Rating: 1
  */
 int bitXor(int x, int y) {
-  return 2;
+  return ~(~(x & ~y) & ~(~x & y));
 }
 /* 
  * tmin - return minimum two's complement integer 
@@ -152,9 +152,8 @@ int bitXor(int x, int y) {
  *   Rating: 1
  */
 int tmin(void) {
-
-  return 2;
-
+  int a = 1;
+  return a << 31;
 }
 //2
 /*
@@ -165,7 +164,7 @@ int tmin(void) {
  *   Rating: 1
  */
 int isTmax(int x) {
-  return 2;
+  return !(x + 1 + x + 1) & !!(x+1);
 }
 /* 
  * allOddBits - return 1 if all odd-numbered bits in word set to 1
@@ -176,7 +175,8 @@ int isTmax(int x) {
  *   Rating: 2
  */
 int allOddBits(int x) {
-  return 2;
+  
+  return !~(x | 0x55555555);
 }
 /* 
  * negate - return -x 
@@ -186,7 +186,7 @@ int allOddBits(int x) {
  *   Rating: 2
  */
 int negate(int x) {
-  return 2;
+  return ~x + 1;
 }
 //3
 /* 
@@ -199,7 +199,7 @@ int negate(int x) {
  *   Rating: 3
  */
 int isAsciiDigit(int x) {
-  return 2;
+  return !((x + ~48 + 1) >> 31) & !!((x + ~58 + 1) >> 31) ;
 }
 /* 
  * conditional - same as x ? y : z 
@@ -209,7 +209,8 @@ int isAsciiDigit(int x) {
  *   Rating: 3
  */
 int conditional(int x, int y, int z) {
-  return 2;
+  int c = !!x;
+  return (~(c - 1) & y ) | ((c - 1) & z);
 }
 /* 
  * isLessOrEqual - if x <= y  then return 1, else return 0 
@@ -219,7 +220,8 @@ int conditional(int x, int y, int z) {
  *   Rating: 3
  */
 int isLessOrEqual(int x, int y) {
-  return 2;
+  int c = ((x >> 31) + (y >> 31)) & 0x1;
+  return (!c & (((x + ~y + 1)) >> 31)) | (c & (x >> 31)) | (!c & !(x & ~y)); 
 }
 //4
 /* 
@@ -231,7 +233,8 @@ int isLessOrEqual(int x, int y) {
  *   Rating: 4 
  */
 int logicalNeg(int x) {
-  return 2;
+  int c = !!x;
+  return (~(c - 1) & 0 ) | ((c - 1) & 1);
 }
 /* howManyBits - return the minimum number of bits required to represent x in
  *             two's complement
@@ -246,7 +249,23 @@ int logicalNeg(int x) {
  *  Rating: 4
  */
 int howManyBits(int x) {
-  return 0;
+  int sign = x >> 31;
+  x = (sign & ~x) | (~sign & x);
+  int b16, b8, b4, b2, b1, b0;
+  b16 = (!!(x >> 16)) << 4;
+  x = x >> b16;
+  b8 = (!!(x >> 8)) << 3;
+  x = x >> b8;
+  b4 = (!!(x >> 4)) << 2;
+  x = x >> b4;
+  b2 = (!!(x >> 2)) << 1;
+  x = x >> b2;
+  b1 = (!!(x >> 1));
+  x = x >> b1;
+  b0 = (!!(x >> 0));
+  x = x >> b0;
+  
+  return b16 + b8 + b4 + b2 + b1 + b0 + 1;
 }
 //float
 /* 
